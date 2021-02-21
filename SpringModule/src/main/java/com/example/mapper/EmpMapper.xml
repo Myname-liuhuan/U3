@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.EmpMapper">
+
+
+    <select id="queryEmpByRelative" parameterType="map" resultType="Map">
+        SELECT * FROM EMP
+        <where>
+            <if test="eid!=null and eid!=''">
+                eid=#{eid}
+            </if>
+            <if test="ename!=null and ename!=''">
+                ename=#{ename}
+            </if>
+            <if test="esex!=null and esex!=''">
+                esex=#{esex}
+            </if>
+            <if test="estartime!=null and estartime!=''">
+                estartime=#{estartime}
+            </if>
+            <if test="epay!=null and epay!=''">
+                epay=#{epay}
+            </if>
+            <if test="did!=null and did!=''">
+                did=#{did}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryEmpByParams" resultType="Map">
+        SELECT * FROM EMP
+        <where>
+            <if test="esex!=null and esex!=''">
+                AND esex=#{esex}
+            </if>
+            <if test="epay != null and epay !=''">
+                AND epay &gt;#{epay}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.EmpMapper">
+    <resultMap id="empResultMap" type="com.example.entity.Emp">
+        <result property="eid" javaType="java.lang.Integer" column="eid"/>
+        <result property="eName" javaType="java.lang.String" column="ename"/>
+        <result property="eSex" javaType="java.lang.String" column="esex"/>
+        <result property="eStartTime" javaType="java.util.Date" column="estartime"/>
+        <result property="ePay" javaType="java.lang.Double" column="epay"/>
+        <result property="did" javaType="java.lang.Integer" column="did"/>
+        <association property="dept" javaType="com.example.entity.Dept">
+            <result property="did" javaType="java.lang.Integer" column="did"/>
+            <result property="dName" javaType="java.lang.String" column="dname"/>
+            <result property="dTel" javaType="java.lang.String" column="dtel"/>
+        </association>
+    </resultMap>
+    
+    
+    <select id="queryAll" parameterType="Map" resultMap="empResultMap">
+        SELECT E.*,D.dname FROM EMP E LEFT JOIN DEPT D ON D.did=E.did
+        <where>
+            <if test="name!=null and name!=''">
+                E.ename LIKE "%"#{name}"%"
+            </if>
+            <if test="minWage!=null and minWage!=''">
+                AND E.epay &gt; #{minWage}
+            </if>
+            <if test="maxWage!=null and maxWage!=''">
+                AND E.epay &lt; #{maxWage}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                AND E.estartime &gt; #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                AND E.estartime &lt; #{endTime}
+            </if>
+            <if test="deptId!=null and deptId!=''">
+                AND e.did=#{deptId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.example.entity.Emp">
+        INSERT INTO EMP VALUES(null ,#{eName},#{eSex},#{eStartTime},#{ePay},#{did})
+    </insert>
+
+    <select id="oneLine" parameterType="java.lang.String" resultMap="empResultMap">
+        SELECT * FROM EMP WHERE eid = #{eid}
+    </select>
+
+    <update id="update" parameterType="com.example.entity.Emp">
+        UPDATE EMP
+        <set>
+            <if test="eName!=null and eName!=''">
+                ename=#{eName},
+            </if>
+            <if test="eSex!=null and eSex!=''">
+                esex=#{eSex},
+            </if>
+            <if test="eStartTime!=null">
+                estartime=#{eStartTime},
+            </if>
+            <if test="ePay!=null and ePay > 0">
+                epay=#{ePay},
+            </if>
+            <if test="did!=null and did > 0">
+                did=#{did}
+            </if>
+        </set>
+        WHERE eid = #{eid}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.String">
+        DELETE FROM EMP WHERE eid=#{eid}
+    </delete>
+</mapper>

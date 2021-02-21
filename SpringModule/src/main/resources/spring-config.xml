@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd" >
+
+    <!--扫描指定包下面所有含有spring注解的类-->
+    <context:component-scan base-package="com.example.*" ></context:component-scan>
+
+    <!--
+    在如下标签里面开始配置springAop的配置
+    proxy-target-class: 表示使用spring代理aop,不然默认使用java代理
+    总结各组件的名称:
+    pointcut: 切点 一组Joint point
+    Joint point: 连接点 当某个方法被加入切点,可以插入其它方法在它前后时，它就成为了连接点 Joint point
+    aspect: 切面 指名advice方法所在的类 切面中可以包含advice 和 pointcut
+    advice: 在指定切点应该做的操作 常见的有 before after after-returning after-throwing round等
+
+    -->
+    <aop:config proxy-target-class="true">
+        <!--
+        pointcut:切点 被切方法的集合(被切:在其前后开口放置其它方法，或者代替它，也可叫做核心方法)
+        expression : execution(* com.example.dao.*.*(..)) 表示找到该包路径下的所有方法作为一个整体形成切点
+        -->
+        <aop:pointcut id="studentPoint" expression="execution(* com.example.dao.*.*(..))"/>
+        <!--
+        aspect:切面
+        ref: 要添加的方法的类id
+        order: 该条语句执行的先后循序，在before的时候order越小越先执行，after的时候越大越先执行
+        -->
+        <aop:aspect ref="dayOfDay" order="2">
+            <!--
+            每一条该语句就是一个 Advice
+            before: 表示将该方法插入到 核心方法前面执行,所在切面(aspect)的order值小越先执行
+            method: 要插入的方法的方法名
+            pointcut-ref: 插入到哪一个切点，值为切点id
+            -->
+            <aop:before method="wishHands" pointcut-ref="studentPoint"></aop:before>
+        </aop:aspect>
+        <aop:aspect ref="dayOfDay" order="5">
+            <!--after:将该方法插入到核心方法后面执行，所在切面(aspect)的order值越大越先执行-->
+            <aop:after method="wishBowls" pointcut-ref="studentPoint"></aop:after>
+        </aop:aspect>
+        <aop:aspect ref="dayOfDay" order="4">
+            <!--
+            after-returning : 当切点中的方法有返回值且参数类型匹配的时候，该advice才会生效，
+            即所有匹配该返回值参数类型的核心方法都会触发该advice
+            如果advice 方法的参数类型是父类,那么该父类的所有子类返回值都会触发该advice方法 eg：Object表示切点中所有方法触发该advice方法
+            如果核心方法有返回值 那么必须有一个advice可以接收它的返回值，否者就会报错
+            -->
+            <aop:after-returning method="getReturn" pointcut-ref="studentPoint" returning="str"></aop:after-returning>
+        </aop:aspect>
+        <aop:aspect ref="dayOfDay" order="3">
+            <!--
+            after-throwing: 当被该advice 关联的pointcut中的某个方法报错时，就会触发该advice方法，
+            且类型为after-returning的advice将不会被执行，(与其所在切面的order属性值大小无关)
+            -->
+            <aop:after-throwing method="getException" pointcut-ref="studentPoint" throwing="ex"></aop:after-throwing>
+        </aop:aspect>
+        <aop:aspect ref="dayOfDay" order="1">
+            <!--
+            around:环绕通知 可以切断核心方法和其它advice的执行，around通知的方法要配置一个ProceedingJoinPoint对象作为形参，当在方法中执行
+            proceed()方法的时候核心方法才会被执行，且指定的切点中每一个Joint point 都会触发环绕通知
+            -->
+            <aop:around method="login" pointcut-ref="studentPoint"></aop:around>
+        </aop:aspect>
+    </aop:config>
+
+
+    <!--
+    在下面集成mybatis的管理,使用IOC控制反转和DI完成对配置的加载(因为实际上框架就是传入初始化数据与类的加载)
+    mybatis中的读取配置文件和配置数据源的功能都可以转移到spring-config.xml里面来配置
+    -->
+    <!--配置db.properties文件的导入-->
+    <bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <!--
+        name: location 表示要加载的是本地源文件
+        value: classpath 表示当前项目的根目录(表示Java目录和resources目录都可以)
+        -->
+        <property name="location" value="classpath:db.properties"></property>
+    </bean>
+
+    <!--
+    配置数据源
+    class : 引用不同的类路径就是不同的数据源
+    还有dbcp数据源如下配置
+    <bean id="basicDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${driver}"></property>
+        <property name="url" value="${url}"></property>
+        <property name="username" value="${username}"></property>
+        <property name="password" value="${password}"></property>
+    </bean>
+    两者除了包名不一样和有的name不一样，其它都是一样的
+    -->
+    <bean id="datasource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!--
+        name:值是固定的，写固定字段数据源才能读取成功，否者就会报错
+        value:引入db.properties文件中数据,使用${key}的方式引入
+        -->
+        <property name="driverClass" value="${driver}"/>
+        <property name="jdbcUrl" value="${url}"/>
+        <property name="user" value="${username}"/>
+        <property name="password" value="${password}"/>
+    </bean>
+
+    <!--
+    加载mybatis的SqlSessionFactory类,这个是整个mybatis操作的核心类
+    该类由于是使用spring加载的，且后续使用spring控制，所以是加载的是
+    org.mybatis.spring.SqlSessionFactoryBean，这个是mybatis开发的面向spring的Factory实现类
+    -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--
+        name: mapperLocations 表示加载的是映射文件
+        value: classpath*: 当根目录下不存在的时候，即多层目录的时候就需要加上*号,
+        多级目录使用“/”作为分隔符
+        -->
+        <property name="mapperLocations" value="classpath*:com/example/mapper/*.xml"></property>
+        <!--将数据源和mybatis关联 ref="datasource"引用在前面定义过的数据源-->
+        <property name="dataSource" ref="datasource"></property>
+        <!--加载mybatis的配置文件-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+    </bean>
+
+    <!--加载和mapper对应的接口-->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.example.mapper"></property>
+    </bean>
+
+</beans>

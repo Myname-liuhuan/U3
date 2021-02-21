@@ -1,0 +1,83 @@
+<html>
+<head>
+    <title>登录界面</title>
+    <meta charset="UTF-8"/>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <style>
+        div{
+            width: 500px;
+            height: 300px;
+            background-color: aqua;
+            margin: 20px auto;
+            padding: 30px;
+        }
+        table{
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div align="center">
+    <h1>小型进销存系统</h1>
+    <table cellpadding="10">
+        <tr>
+            <td>用户名:</td>
+            <td><input type="text" name="userName" id="username"></td>
+        </tr>
+        <tr>
+            <td>密码:</td>
+            <td><input type="password" name="password" id="password"></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <input type="button" value="登录" id="login">
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+<script>
+<!--非空验证以及ajax登录验证-->
+    $("#login").click(function () {
+        notNullCheck();
+        checkRight();
+    });
+</script>
+
+<script>
+    //非空验证
+    function notNullCheck(){
+        if ($("#username").val()==''){
+            alert("请输入用户名");
+            return;
+        }
+        if ($("#password").val()==''){
+            alert("请输入密码");
+            return;
+        }
+    }
+    
+    //账号密码正确性验证
+    function checkRight() {
+        $.post(
+            "/PurchaseAndSale_war_exploded/login.lh",
+            {
+                "username":$("#username").val(),
+                "password":$("#password").val()
+            },
+            function (date) {
+                //如果在后台定义返回类型为boolean 那么需要同时定义ajax的返回类型为json,在Ajax中 后台的返回类型除了string是text外
+                //其它都是json类型
+                console.log(date,typeof date);
+                if (!date){
+                    alert("用户名或密码错误！请再次输入");
+                }else{
+                    location.href="/PurchaseAndSale_war_exploded/pages/main.jsp";
+                }
+            },
+            "json"
+        );
+    }
+</script>
+</html>

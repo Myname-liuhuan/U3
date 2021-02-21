@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试springMvc是否成功</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+<body>
+<div align="center">
+    <button id="btn1">点击发送无返回请求</button>
+    <button id="btn2">发送有返回请求</button>
+</div>
+</body>
+<script>
+    $("#btn1").click(function () {
+        $.post(
+            "/SpringMVC_war_exploded/userServlet/back.s",
+            function (data) {
+                console.log(data);
+            },
+            "text"
+        );
+    });
+    $("#btn2").click(function () {
+        $.get(
+            "/SpringMVC_war_exploded/userServlet/back2.s",
+            function (data) {
+                console.log(data);
+                if (data=="true"){
+                    alert("请求成功");
+                }
+            },
+            "text"
+        );
+    });
+</script>
+</html>

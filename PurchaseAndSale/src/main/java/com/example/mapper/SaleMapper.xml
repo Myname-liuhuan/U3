@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.SaleMapper">
+    <insert id="insert" parameterType="Map">
+        INSERT INTO sale VALUES(null,#{price},#{quantity},#{totalPrice},#{saleDate},#{userId},#{productId});
+    </insert>
+
+
+    <!--判断按照指端排序 不能使用 h.#{orderBy}的方式，这样后台在分页查询count(0)的时候会出逻辑错误 结果为0
+    所以可以将其定义为 if语句判断。-->
+    <select id="queryAll" resultType="Map" parameterType="java.lang.Integer">
+        select p.productName,h.* from product p,
+        (SELECT s.*,u.realName FROM sale s,`users` u WHERE s.userId=u.id) h
+        where p.id=h.productId
+        <if test="_parameter==0">
+            ORDER BY h.saleDate DESC
+        </if>
+        <if test="_parameter==1">
+            ORDER BY h.price DESC
+        </if>
+    </select>
+</mapper>

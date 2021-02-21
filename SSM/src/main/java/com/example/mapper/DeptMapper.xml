@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.DeptMapper">
+    <resultMap id="deptMap" type="com.example.entity.Dept">
+        <result property="did" javaType="java.lang.Integer" column="did"/>
+        <result property="dName" javaType="java.lang.String" column="dname"/>
+        <result property="dTel" javaType="java.lang.String" column="dtel"/>
+    </resultMap>
+
+    <select id="queryAll" resultMap="deptMap">
+        SELECT * FROM DEPT
+    </select>
+</mapper>

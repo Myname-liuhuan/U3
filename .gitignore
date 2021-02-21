@@ -1,0 +1,6 @@
+# Project exclude paths
+/MyBatisTest/target/
+/PurchaseAndSale/target/
+/SpringModule/target/
+/SpringMVC/target/
+/TestDay13/target/

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.dao.HusbandMapper">
+    <resultMap id="husbandMap" type="Husband">
+        <result property="husId" javaType="java.lang.Integer" column="hus_id"></result>
+        <result property="husbandName" javaType="java.lang.String" column="husband_name"></result>
+    </resultMap>
+
+    <select id="queryAll" resultMap="husbandMap">
+        SELECT * FROM HUSBAND
+    </select>
+
+    <insert id="insertHusband" parameterType="Husband">
+        INSERT INTO HUSBAND VALUES(#{husId},#{age},#{gender},#{husbandName})
+    </insert>
+
+    <update id="updateHusband" parameterType="Husband">
+        UPDATE HUSBAND
+        <trim prefix="set" suffixOverrides=",">
+            <if test="age!=null and age!=''">
+                age=#{age},
+            </if>
+            <if test="gender!=null and gender!=''">
+                gender=#{gender},
+            </if>
+            <if test="husbandName!=null and husbandName!=''">
+                husband_name=#{husbandName}
+            </if>
+        </trim>
+        WHERE hus_id=#{husId}
+    </update>
+
+    <delete id="deleteHusband" parameterType="Integer">
+        DELETE FROM HUSBAND WHERE hus_id=#{husId}
+    </delete>
+
+ </mapper>
